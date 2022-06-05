@@ -1,0 +1,218 @@
+﻿@using IskurTwitterApp.AppModels;
+
+@model HomepageViewModel
+
+@{
+    ViewBag.Title = "Anasayfa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    int likeCount;
+
+    string timeCalculator(DateTime time)
+    {
+
+        const int SECOND = 1;
+        const int MINUTE = 60 * SECOND;
+        const int HOUR = 60 * MINUTE;
+        const int DAY = 24 * HOUR;
+        const int MONTH = 30 * DAY;
+
+
+        var ts = new TimeSpan(DateTime.Now.Ticks - time.Ticks);
+        double delta = Math.Abs(ts.TotalSeconds);
+
+
+        if (delta < 1 * MINUTE)
+            return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+
+        if (delta < 2 * MINUTE)
+            return "a minute ago";
+
+        if (delta < 45 * MINUTE)
+            return ts.Minutes + " minutes ago";
+
+        if (delta < 90 * MINUTE)
+            return "an hour ago";
+
+        if (delta < 24 * HOUR)
+            return ts.Hours + " hours ago";
+
+        if (delta < 48 * HOUR)
+            return "yesterday";
+
+        if (delta < 30 * DAY)
+            return ts.Days + " days ago";
+
+        if (delta < 12 * MONTH)
+        {
+            int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
+            return months <= 1 ? "one month ago" : months + " months ago";
+        }
+        else
+        {
+            int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
+            return years <= 1 ? "one year ago" : years + " years ago";
+        }
+    }
+
+}
+
+<div id="panelhdr" class="panel-heading">
+    <p>Anasayfa</p>
+</div>
+
+<div id="tweetarea">
+    <div class="imageholder">
+        <img alt="" class="media-object img-rounded" src="~/Content/images/@Model.sessionUser.ProfileImage" width="64" height="64">
+    </div>
+    <form id="tweet-homepage" action="@Url.Action("Tweet", "Home")" method="post" enctype="multipart/form-data">
+        <textarea name="TweetText" id="txttweet" placeholder="Neler oluyor ?" cols="50" rows="2" required></textarea>
+        <div id="tweetfooter">
+            <div class="icon-group">
+                <label id="icon-select-pp-file" for="input-photo"> <i class="fas fa-image"></i>  </label>
+                <input type="file" name="TwitPostImage" id="input-photo" class="form-control hide" hidden />
+            </div>
+            <input type="submit" id="tweetle-1" value="Tweetle">
+        </div>
+    </form>
+</div>
+
+@foreach (var usr in Model.connectedUsers)
+{
+    foreach (var tweet in usr.Tweets)
+    {
+        <div class="media">
+            <a class="media-left" href="#fake">
+                <img alt="" class="media-object img-rounded img-fluid" src="~/Content/images/@usr.ProfileImage" width="64" height="64">
+            </a>
+            <div class="media-body">
+                <div class="mediaheader">
+                    <form id="tweet-go-userprofile" action="@Url.Action("OtherProfile", "Home")" name="tweet-header" method="post">
+                        <input type="text" name="UserId" value="@tweet.User.UserId" id="tweet-userid" hidden />
+                        <button class="username-tag-btn" type="submit" id="username-tag">@tweet.User.Name</button>
+                        <span>&nbsp;&nbsp;@String.Format("@{0}", tweet.User.Username)</span>
+                        <span>&nbsp;&nbsp;@String.Format("{0}", timeCalculator(tweet.SendTime))</span>
+                        <a class="angledown" href=""><i class="fas fa-angle-down"></i></a>
+                    </form>
+
+                    @if (tweet.IsRetweet)
+                    {
+                        <div style="margin:15px 0">
+                            <form id="tweet-go-userprofile-rt" action="@Url.Action("OtherProfile", "Home")" method="post">
+                                <input type="text" name="UserId" value="@tweet.User.UserId" hidden />
+                                <button class="btn btn-sm btn-link" style="float:none !important" type="submit">
+                                    <b>@String.Format("@{0}", tweet.TweetOwnerName)</b>
+                                </button>
+                                kullanıcından retweetlendi
+                            </form>
+                        </div>
+                    }
+                </div>
+
+                <div style="display:block; margin:10px 0; ">
+                    <p>@tweet.TweetText</p>
+
+                    @if (!String.IsNullOrEmpty(tweet.TwitImage))
+                    {
+                        <img alt="" class="img-responsive" src="~/Content/images/timg/@tweet.TwitImage">
+                    }
+
+                    <ul class="nav nav-pills nav-pills-custom">
+                        <li class="right-li">
+                            <button type="button" class="show-comment-area"><i class="fas fa-comment"></i></button>
+                        </li>
+                        <li class="right-li">
+                            <form id="tweet-homepage" action="@Url.Action("Retweet", "Home")" name="retweet-form" method="post">
+                                <input type="text" name="TweetId" value="@tweet.TweetId" id="like-count" hidden />
+                                <button type="submit" id="like-btn"><i class="fas fa-retweet"></i></button>
+                                <span></span>
+                            </form>
+                        </li>
+                        <li class="right-li">
+                            <form id="tweet-homepage" action="@Url.Action("Like", "Home")" name="like-form" method="post">
+                                <input type="text" name="TweetId" id="like-count" value="@tweet.TweetId" hidden>
+                                @*<input type="text" value="Index" hidden />*@
+                                <button type="submit" id="like-btn"><i id="heartIcon" class="fas fa-heart"></i></button>
+                                <span>
+                                    @if (tweet.Likes != null)
+                                    {
+                                        likeCount = tweet.Likes.Count;
+                                    }
+                                    else
+                                    {
+                                        likeCount = 0;
+                                    }
+                                    @likeCount
+                                </span>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="row comment-area hide">
+                    <div class="col-sm-12">
+                        <div class="comment-wrapper">
+                            <div class="panel panel-info">
+                                <div class="panel-body">
+
+                                    <form action="@Url.Action("Comment", "Home")" name="twit-comment-form" method="post">
+                                        <input type="text" name="TweetId" id="like-count" value="@tweet.TweetId" hidden>
+                                        <input type="text" name="UserId" id="like-count" value="@usr.UserId" hidden>
+                                        <textarea name="CommentText" class="form-control form-comment-text" placeholder="Yorum bırakın..." rows="3"></textarea>
+                                        <br>
+                                        <button type="submit" class="btn btn-info btn-send-comment pull-right">Kaydet</button>
+                                    </form>
+
+                                    <div class="clearfix"></div>
+
+
+                                    @if (tweet.Comment != null)
+                                    {
+                                        <hr>
+                                        @*Yorumları Listele*@
+
+                                        <ul class="media-list">
+
+                                            @foreach (var comment in tweet.Comment)
+                                            {
+                                                var cssClass = "user"; // Diğer Kullanıcılar
+
+                                                if (comment.UserId == usr.UserId)
+                                                {
+                                                    cssClass = "owner";  // Tweeet Sahibi
+                                                }
+
+                                                var commentUser = Model.connectedUsers.FirstOrDefault(x => x.UserId == comment.UserId);
+
+                                                <li class="media @cssClass">
+                                                    <a href="#" class="pull-left comment-img-area">
+                                                        <img src="~/Content/images/@commentUser.ProfileImage" alt="" class="img-circle">
+                                                    </a>
+                                                    <div class="media-body">
+                                                        <p><small class="text-muted"> @String.Format("@{0}", commentUser.Name)</small></p>
+                                                       
+                                                        <p>
+                                                            @comment.CommentText
+                                                            @*<a href="#">#consecteturadipiscing </a>.*@
+                                                        </p>
+                                                    </div>
+                                                </li>
+                                            }
+
+                                        </ul>
+                                    }
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+}
+

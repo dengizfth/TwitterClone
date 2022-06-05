@@ -1,0 +1,174 @@
+﻿@using IskurTwitterApp.AppModels;
+
+@model OtherUsersViewModel
+
+@{
+    ViewBag.Title = "OtherProfile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+@{ int likeCount;
+
+    string timeCalculator(DateTime time)
+    {
+
+        const int SECOND = 1;
+        const int MINUTE = 60 * SECOND;
+        const int HOUR = 60 * MINUTE;
+        const int DAY = 24 * HOUR;
+        const int MONTH = 30 * DAY;
+
+
+        var ts = new TimeSpan(DateTime.Now.Ticks - time.Ticks);
+        double delta = Math.Abs(ts.TotalSeconds);
+
+
+        if (delta < 1 * MINUTE)
+            return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+
+        if (delta < 2 * MINUTE)
+            return "a minute ago";
+
+        if (delta < 45 * MINUTE)
+            return ts.Minutes + " minutes ago";
+
+        if (delta < 90 * MINUTE)
+            return "an hour ago";
+
+        if (delta < 24 * HOUR)
+            return ts.Hours + " hours ago";
+
+        if (delta < 48 * HOUR)
+            return "yesterday";
+
+        if (delta < 30 * DAY)
+            return ts.Days + " days ago";
+
+        if (delta < 12 * MONTH)
+        {
+            int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
+            return months <= 1 ? "one month ago" : months + " months ago";
+        }
+        else
+        {
+            int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
+            return years <= 1 ? "one year ago" : years + " years ago";
+        }
+    }
+}
+
+<div id="panelhdr" class="panel-heading">
+    <div id="bookmarks-heading">
+        <p>@Model.currentUser.Name</p>
+        <span>@Model.currentUser.Tweets.Count Tweets</span>
+    </div>
+</div>
+<div id="profile-area">
+    <div id="profile-banner">
+
+    </div>
+    <div id="profile-info">
+        <div id="profile-info-header">
+            <a id="pi-profilepicture" href="">
+                <img alt="" class="media-object img-rounded" src="~/Content/images/@Model.currentUser.ProfileImage" width="128" height="128">
+            </a>
+            @if (ViewBag.followStatus == false)
+            {
+                <form class="following-status-form" action="@Url.Action("Follow", "Home")" name="tweet-header" method="post">
+                    <input type="hidden" name="UserId" value="@Model.currentUser.UserId" id="tweet-userid" hidden />
+                    <button id="follows-status-btn" type="submit">Takip et</button>
+                </form> }
+            else
+            {
+                <form class="following-status-form" action="@Url.Action("UnFollow", "Home")" name="tweet-header" method="post">
+                    <input type="hidden" name="UserId" value="@Model.currentUser.UserId" id="tweet-userid" hidden />
+                    <button id="follows-status-btn" type="submit">Takip ediliyor</button>
+                </form>}
+        </div>
+        <div id="profile-info-content">
+            <p id="pi-namesurname">@Model.currentUser.Name</p>
+            <p id="pi-username">@String.Format("@{0}", Model.currentUser.Username)</p>
+            <p id="pi-description">@Model.currentUser.PersonalInformation</p>
+            <p id="pi-birthdate"><i class="fas fa-birthday-cake"></i> &nbsp;Doğum tarihi: @Model.currentUser.BirthDate   &nbsp;&nbsp;<i class="far fa-calendar-alt"></i> &nbsp;@Model.currentUser.RegistrationDate.ToString("MMMM yyyy") tarihinde katıldı</p>
+            <form class="following-count-form" action="@Url.Action("Followers", "Home")" name="tweet-header" method="post">
+                <input type="text" name="UserId" value="@Model.currentUser.UserId" id="tweet-userid" hidden />
+                <button class="follow-tag-button" type="submit" id="username-tag"><span class="span-follow-counts">@Model.currentUser.Followers.Count &nbsp;</span><span>Takip edilen</span></button>
+            </form>
+            <form id="follower-form-count" class="following-count-form" action="@Url.Action("Followers", "Home")" name="tweet-header" method="post">
+                <input type="hidden" name="UserId" value="@Model.currentUser.UserId" id="tweet-userid" hidden />
+                <button class="follow-tag-button" type="submit" id="username-tag"><span class="span-follow-counts">@ViewBag.followers &nbsp;</span><span>Takipçi</span></button>
+            </form>
+        </div>
+        <div id="profile-info-footer">
+            <div id="pif-tweets" class="pif-group">
+                <a href="">Tweetler</a>
+            </div>
+            <div id="pif-tweetsandanswers" class="pif-group">
+                <a href="">Tweetler ve Yanıtlar</a>
+            </div>
+            <div id="pif-media" class="pif-group">
+                <a href="">Medya</a>
+            </div>
+            <div id="pif-like" class="pif-group">
+                <a href="">Beğeni</a>
+            </div>
+        </div>
+    </div>
+    @foreach (var tweet in Model.currentUser.Tweets)
+    {
+        <div class="media">
+            <a class="media-left" href="#fake">
+                <img alt="" class="media-object img-rounded" src="~/Content/images/@tweet.User.ProfileImage" width="64" height="64">
+            </a>
+            <div class="media-body">
+                <form id="tweet-go-userprofile" action="@Url.Action("OtherProfile", "Home")" name="tweet-header" method="post">
+                    <input type="text" name="UserId" value="@tweet.User.UserId" id="tweet-userid" hidden />
+                    <button class="username-tag-btn" type="submit" id="username-tag">@tweet.User.Name</button>
+                    <span>&nbsp;&nbsp;@String.Format("@{0}", tweet.User.Username)</span>
+                    <span>&nbsp;&nbsp;@String.Format("{0}", timeCalculator(tweet.SendTime))</span>
+                </form>
+                <p>
+                    @tweet.TweetText
+                </p>
+                <ul class="nav nav-pills nav-pills-custom">
+
+                    <li class="right-li">
+                        <form id="tweet-homepage" action="@Url.Action("Like", "Retweet")" name="retweet-form" method="post">
+                            <input type="text" value="@tweet.TweetId" id="like-count" hidden />
+                            <button type="submit" id="like-btn"><i class="fas fa-retweet"></i></button>
+                            <span></span>
+                        </form>
+                        @*<a href="#"><span class="glyphicon glyphicon-retweet"></span></a>*@
+                    </li>
+
+                    <li class="right-li">
+                        <form id="tweet-homepage" action="@Url.Action("Like", "Home")" name="like-form" method="post">
+
+                            <input type="text" name="TweetId" id="like-count" value="@tweet.TweetId" hidden>
+                            <input type="text" name="UserId" value="@tweet.UserId" hidden>
+
+                            <button type="submit" id="like-btn"><i id="heartIcon" class="fas fa-heart"></i></button>
+
+                            <span>
+                                @if (tweet.Likes != null)
+                                {
+                                    likeCount = tweet.Likes.Count;
+                                }
+                                else
+                                {
+                                    likeCount = 0;
+                                }
+
+                                @likeCount
+                            </span>
+
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+    }
+</div>

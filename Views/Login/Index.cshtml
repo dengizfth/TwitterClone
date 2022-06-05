@@ -1,0 +1,95 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Login to Twitter
+    </title>
+    <link rel="stylesheet" type="text/css" href="~/Content/css/login.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/c938557ed7.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
+</head>
+
+<body>
+    <div id="container-all" class="container">
+
+        <div class="row">
+
+            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+
+                @if (!String.IsNullOrEmpty(ViewBag.giris))
+                {
+                    <div class="alert alert-primary" role="alert">
+                        @ViewBag.giris;
+                    </div>
+                }
+                @if (!String.IsNullOrEmpty(ViewBag.mesaj))
+                {
+                    <div class="alert alert-primary" role="alert">
+                        @ViewBag.mesaj;
+                    </div>
+                }
+
+                <div id="loginCard" class="card card-signin my-5">
+
+                    <div id="card-login" class="card-body">
+
+                        <i id="twitterIcon" class="fab fa-twitter  fa-2x" style="color: #1DA1F2;"></i>
+
+                        <h5 id="hdrH5" class="card-title text-center"><b>Twitter'a giriş yap</b></h5>
+
+                        <form id="loginForm" class="form-signin" method="post" action="/Login/Index">
+
+                            <div class="form-group">
+                                <input type="text"
+                                       id="inputUsername"
+                                       class="form-control"
+                                       placeholder="Kullanıcı adı giriniz"
+                                       name="kullanigirisadi"
+                                       required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password"
+                                       id="inputPassword"
+                                       name="kullanicigirissifre"
+                                       class="form-control"
+                                       placeholder="Şifre"
+                                       required>
+                            </div>
+
+                            <button id="login-button" class="btn btn-lg btn-primary btn-block " type="submit">Giriş Yap</button>
+
+                        </form>
+
+                        @* <a id="aforgotpswrd" href="">Şifreni mi unuttun?</a> *@
+                       
+                       
+
+                       
+
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-12">
+                                @Html.ActionLink("Kayıt Ol", "Register", "Login")
+                            </div>
+                           
+                        </div>
+                        <div class="row">
+                       
+                            <div class="col-12">
+                                @Html.ActionLink("Dashboard", "Dashport", "Account")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>

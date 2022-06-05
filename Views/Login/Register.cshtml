@@ -1,0 +1,84 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Register to Twitter
+    </title>
+    <link rel="stylesheet" type="text/css" href="~/Content/css/login.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/c938557ed7.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
+</head>
+
+<body>
+    <div id="container-all" class="container">
+
+        <div class="row">
+
+            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+
+                @if (!String.IsNullOrEmpty(ViewBag.mesaj))
+                {
+                    @ViewBag.mesaj
+                }
+
+                <div id="registerCard" class="card card-signin my-5">
+
+                    <div id="card-register" class="card-body">
+
+                        <form id="register-form" action="/Login/Register" method="post" class="form-signin">
+
+                            <i id="twitterIcon" class="fab fa-twitter  fa-2x" style="color: #1DA1F2;"></i>
+
+                            <h5 id="hdrH5" class="card-title text-center">
+                                <b>Hesabını Oluştur</b>
+                            </h5>
+
+                            <div class="form-group">
+                                <label for="register-username">Kullanıcı Adı</label>
+                                <input name="Username" type="text" id="register-username" class="form-control" placeholder="" required
+                                       autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-name">İsim</label>
+                                <input name="Name" type="text" id="register-name" class="form-control" placeholder="" required
+                                       autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-phone">Telefon Numarası</label>
+                                <input name="Phone" type="number" id="register-phone" class="form-control" placeholder="" required
+                                       autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-email">E-mail</label>
+                                <input name="Email" type="email" id="register-email" class="form-control" placeholder="" required
+                                       autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-password">Şifre</label>
+                                <input name="Password" type="password" id="register-password" class="form-control" placeholder="" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-photo">Şifre</label>
+                                <input name="repeat" type="password" id="register-password" class="form-control" placeholder="" required>
+                            </div>
+
+                            <button id="button-register" class="btn btn-lg btn-primary btn-block " type="submit" value="Create">Kayıt ol</button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

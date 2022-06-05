@@ -1,0 +1,52 @@
+﻿@using IskurTwitterApp.Models;
+@model User
+
+@{
+    ViewBag.Title = "Followers";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="panelhdr" class="panel-followers-heading">
+    <div id="notifications-heading">
+        <p>@Model.Name</p>
+        <span class="followers-span-header">@String.Format($"@{Model.Username}")</span>
+    </div>
+    <div id="notifications">
+        <div class="not-group">
+            <a href="">Takipçiler</a>
+        </div>
+        <div class="not-group">
+            <a href="">Takip ediliyor</a>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.following != null)
+{
+    foreach (var usr in ViewBag.following)
+    {
+        <div class="media">
+            <div class="media-left">
+                <img src="~/Content/images/@usr.ProfileImage" alt="" class="media-object img-rounded" width="64" height="64">
+            </div>
+            <div class="media-body">
+                <div>
+                    <form class="follow-form" action="@Url.Action("OtherProfile", "Home")" name="follow-form" method="post">
+                        <input type="hidden" name="UserId" value="@usr.UserId" id="follow-userid" hidden />
+                        <button class="username-tag-btn" type="submit" id="username-tag">@usr.Name</button>
+                    </form>
+
+                    <div>
+                        <form id="followform-2" class="follow-form" action="@Url.Action("UnFollow", "Home")" name="follow-form" method="post">
+                            <input type="hidden" name="UserId" value="@usr.UserId" id="follow-userid" hidden />
+                            <button class="follow-button" type="submit" id="follow-btn">Takip Ediliyor</button>
+                        </form>
+                    </div>
+
+                    <p class="id-tag-userp">&nbsp;@String.Format("@{0}", usr.Username)</p>
+                </div>
+            </div>
+        </div>
+    }
+}
+

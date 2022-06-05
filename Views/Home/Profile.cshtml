@@ -1,0 +1,249 @@
+﻿@using IskurTwitterApp.AppModels;
+
+@model UserViewModel
+
+@{
+    ViewBag.Title = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    int likeCount;
+
+    string timeCalculator(DateTime time)
+    {
+
+        const int SECOND = 1;
+        const int MINUTE = 60 * SECOND;
+        const int HOUR = 60 * MINUTE;
+        const int DAY = 24 * HOUR;
+        const int MONTH = 30 * DAY;
+
+
+        var ts = new TimeSpan(DateTime.Now.Ticks - time.Ticks);
+        double delta = Math.Abs(ts.TotalSeconds);
+
+
+        if (delta < 1 * MINUTE)
+            return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+
+        if (delta < 2 * MINUTE)
+            return "a minute ago";
+
+        if (delta < 45 * MINUTE)
+            return ts.Minutes + " minutes ago";
+
+        if (delta < 90 * MINUTE)
+            return "an hour ago";
+
+        if (delta < 24 * HOUR)
+            return ts.Hours + " hours ago";
+
+        if (delta < 48 * HOUR)
+            return "yesterday";
+
+        if (delta < 30 * DAY)
+            return ts.Days + " days ago";
+
+        if (delta < 12 * MONTH)
+        {
+            int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
+            return months <= 1 ? "one month ago" : months + " months ago";
+        }
+        else
+        {
+            int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
+            return years <= 1 ? "one year ago" : years + " years ago";
+        }
+    }
+
+}
+
+<div id="panelhdr" class="panel-heading">
+    <div id="bookmarks-heading">
+        <p>@Model.CurrentUser.Name</p>
+        <span>@Model.CurrentUser.Tweets.Count Tweets</span>
+    </div>
+</div>
+
+<div id="profile-area">
+    <div id="profile-banner">
+
+    </div>
+    <div id="profile-info">
+        <div id="profile-info-header">
+            <a id="pi-profilepicture" href="">
+                <img alt="" class="media-object img-rounded" src="~/Content/images/@Model.CurrentUser.ProfileImage" width="128" height="128">
+            </a>
+            <a onclick="setProfileModal()" id="pi-setprofilebutton" href="">Profili düzenle</a>
+        </div>
+        <div id="profile-info-content">
+            <p id="pi-namesurname">@Model.CurrentUser.Name</p>
+            @*<p id="pi-username">@String.Format("@{0}", Model.Username)</p>*@
+            <p id="pi-description">@Model.CurrentUser.PersonalInformation</p>
+            <p id="pi-birthdate"><i class="fas fa-birthday-cake"></i> &nbsp;Doğum tarihi: @Model.CurrentUser.BirthDate &nbsp;&nbsp;<i class="far fa-calendar-alt"></i> &nbsp;@Model.CurrentUser.RegistrationDate.ToString("MMMM yyyy") tarihinde katıldı</p>
+            @*<a id="pi-following" href=""><span>@Model.Followers.Count</span><p>Takip edilen</></a>
+                <a id="pi-follower" href=""><span>@ViewBag.followers</span><p>Takipçi</p></a>*@
+            <form class="following-count-form" action="@Url.Action("Followers", "Home")" name="tweet-header" method="post">
+                <input type="text" name="UserId" value="@Model.CurrentUser.UserId" id="tweet-userid" hidden />
+                <button class="follow-tag-button" type="submit" id="username-tag"><span class="span-follow-counts">@Model.CurrentUser.Followers.Count &nbsp;</span><span>Takip edilen</span></button>
+            </form>
+            <form id="follower-form-count" class="following-count-form" action="@Url.Action("Followers", "Home")" name="tweet-header" method="post">
+                <input type="hidden" name="UserId" value="@Model.CurrentUser.UserId" id="tweet-userid" hidden />
+                <button class="follow-tag-button" type="submit" id="username-tag"><span class="span-follow-counts">@ViewBag.followers &nbsp;</span><span>Takipçi</span></button>
+            </form>
+        </div>
+        <div id="profile-info-footer">
+            <div id="pif-tweets" class="pif-group">
+                <a href="">Tweetler</a>
+            </div>
+            <div id="pif-tweetsandanswers" class="pif-group">
+                <a href="">Tweetler ve Yanıtlar</a>
+            </div>
+            <div id="pif-media" class="pif-group">
+                <a href="">Medya</a>
+            </div>
+            <div id="pif-like" class="pif-group">
+                <a href="">Beğeni</a>
+            </div>
+        </div>
+    </div>
+    @foreach (var tweet in Model.CurrentUser.Tweets)
+    {
+        <div class="media">
+            <a class="media-left" href="#fake">
+                <img alt="" class="media-object img-rounded" src="~/Content/images/@Model.CurrentUser.ProfileImage" width="64" height="64">
+            </a>
+            <div class="media-body">
+                <div class="mediaheader">
+                    <form id="tweet-go-userprofile" action="@Url.Action("OtherProfile", "Home")" name="tweet-header" method="post">
+                        <input type="text" name="UserId" value="@tweet.User.UserId" id="tweet-userid" hidden />
+                        <button class="username-tag-btn" type="submit" id="username-tag">@tweet.User.Name</button>
+                        <span>&nbsp;&nbsp;@String.Format("@{0}", tweet.User.Username)</span>
+                        <span>&nbsp;&nbsp;@String.Format("{0}", timeCalculator(tweet.SendTime))</span>
+                        <a class="angledown" href=""><i class="fas fa-angle-down"></i></a>
+                    </form>
+                </div>
+                <p>
+                    @tweet.TweetText
+                </p>
+                @if (!String.IsNullOrEmpty(tweet.TwitImage))
+                {
+                    <img alt="" class="img-responsive" src="~/Content/images/timg/@tweet.TwitImage">
+
+                }
+
+                <ul class="nav nav-pills nav-pills-custom">
+                    @*<li>
+                        <form id="tweet-homepage" action="@Url.Action("Like", "Share")" name="share-form" method="post">
+                            <input type="text" value="@tweet.TweetId" id="like-count" hidden />
+                            <button type="submit" id="like-btn"><i class="fas fa-share"></i></button>
+                            <span></span>
+                        </form>
+                    </li>*@
+                    <li class="right-li">
+                        <form id="tweet-homepage" action="@Url.Action("Like", "Retweet")" name="retweet-form" method="post">
+                            <input type="text" value="@tweet.TweetId" id="like-count" hidden />
+                            <button type="submit" id="like-btn"><i class="fas fa-retweet"></i></button>
+                            <span></span>
+                        </form>
+                        @*<a href="#"><span class="glyphicon glyphicon-retweet"></span></a>*@
+                    </li>
+                    <li class="right-li">
+                        <form id="tweet-homepage" action="@Url.Action("Like", "Home")" name="like-form" method="post">
+                            <input type="text" name="TweetId" id="like-count" value="@tweet.TweetId" hidden>
+                            <button type="submit" id="like-btn"><i id="heartIcon" class="fas fa-heart"></i></button>
+                            <span>
+                                @if (tweet.Likes != null)
+                                {
+                                    likeCount = tweet.Likes.Count;
+                                }
+                                else
+                                {
+                                    likeCount = 0;
+                                }
+                                @likeCount
+                            </span>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    }
+</div>
+
+<div id="pop-up">
+    <div id="edit-profile-card" class="card card-signin">
+        <div id="crdBdy" class="card-body">
+
+            <form id="edit-profile-form" class="form-edit-profile" method="post" action="@Url.Action("UpdateUser", "Home")" enctype="multipart/form-data">
+                <div id="edit-profile-form-header">
+                    <h5 id="hdrH5" class="card-title text-center" style="float: left;">
+                        <b>Profili Düzenle</b>
+                    </h5>
+                    <button class="btn-save-profile" type="submit">Kaydet</button>
+                </div>
+                <div id="edit-profile-belowheader">
+                    <div id="edit-profile-banner">
+                        <div id="form-banner" class="form-group">
+                            <label id="icon-select-file" for="input-photo" class="btn"> <i class="fas fa-camera"></i></label>
+                            <input type="file" id="input-photo" class="form-control" placeholder="upload file" />
+                        </div>
+                    </div>
+                    <div id="emptyspace-top">
+                        <img alt="" class="edit-profile-pic" src="~/Content/images/@Model.CurrentUser.ProfileImage" width="128" height="128">
+                        <div id="select-pp-form">
+                            <label id="icon-select-pp-file" for="input-pp-image" class="btn"> <i class="fas fa-camera"></i></label>
+                            <input type="file" name="ProfilePicture" id="input-pp-image" class="form-control" hidden />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="input-personal-information">İsim</label>
+                    <input type="text" name="Name" id="input-name" class="form-control" value="@Model.CurrentUser.Name" />
+                </div>
+                <div class="form-group">
+                    <label for="input-personal-information">Kişisel bilgiler</label>
+                    <input type="text" name="PersonalInformation" id="input-personal-information" class="form-control" value="@Model.CurrentUser.PersonalInformation" required />
+                </div>
+                <div class="form-group">
+                    <label for="input-personal-location">Konum</label>
+                    <input type="text" name="Location" id="input-location" class="form-control" value="@Model.CurrentUser.Location" required />
+                </div>
+                <div class="form-group">
+                    <label for="input-web-page">İnternet sitesi</label>
+                    <input type="url" name="WebPage" id="input-web-page" class="form-control" value="@Model.CurrentUser.WebPage" />
+                </div>
+                <div class="form-group">
+                    <label for="input-born-date">Doğum tarihi</label>
+                    <input type="date" name="BirthDate" id="input-born-date" class="form-control" value="@Model.CurrentUser.BirthDate" required />
+                </div>
+                <div id="emptyspace-bottom"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const popUp = document.getElementById('pop-up');
+
+    function setProfileModal() {
+        event.preventDefault();
+        popUp.style.display = 'block';
+    }
+
+    window.onclick = function (event) {
+        console.log(event.target);
+        if (event.target == popUp) {
+            popUp.style.display = "none";
+        }
+    }
+        //// Add the following code if you want the name of the file appear on select
+        //$("#input-pp-image").on("change", function () {
+        //    var fileName = $(this).val().split("\\").pop();
+        //    $(this).siblings("icon-select-pp-file").addClass("selected").html(fileName);
+        //});
+        //$(".custom-file-input").on("change", function () {
+        //    var fileName = $(this).val().split("\\").pop();
+        //    $(this).siblings("#icon-select-pp-file").addClass("selected").html(fileName);
+</script>
